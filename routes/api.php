@@ -26,3 +26,10 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('refresh', 'refresh');
     Route::post('me', 'me');
 });
+
+
+Route::group(['middleware' => 'jwt.verify'], function () {
+    Route::get('user', function () {
+        return "hola";
+    });
+});
