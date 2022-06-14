@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,6 +24,7 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'surname',
         'password',
+        'status',
     ];
 
     /**
@@ -48,5 +50,48 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function name(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => ucwords($value),
+            set: fn ($value) => strtolower($value),
+
+        );
+    }
+
+    public function surname(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => ucwords($value),
+            set: fn ($value) => strtolower($value),
+        );
+    }
+
+    //Relación uno a muchos
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    public function manuals()
+    {
+        return $this->hasMany(Manual::class);
+    }
+
+    public function sections()
+    {
+        return $this->hasMany(Section::class);
+    }
+
+    public function subsection()
+    {
+        return $this->hasMany(Subsection::class);
+    }
+
+    public function setps()
+    {
+        return $this->hasMany(Steps::class);
     }
 }

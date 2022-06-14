@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Validator;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
-class AuthController extends Controller
+class UserController extends Controller
 {
     /**
-     * Create a new AuthController instance.
+     * Create a new UserController instance.
      *
      * @return void
      */
