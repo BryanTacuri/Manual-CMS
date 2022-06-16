@@ -7,7 +7,7 @@ class ApiResponse
     public $statusCode;
     public $message;
     public $data;
-    public $pagination;
+
 
 
     public function __construct(

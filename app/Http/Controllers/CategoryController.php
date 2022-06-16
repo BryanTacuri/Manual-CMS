@@ -17,7 +17,7 @@ class CategoryController extends Controller
     private $service;
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['store', 'index', 'getById', 'update', 'delete']]);
+        $this->middleware('auth:api', ['except' => ['index']]);
         $this->service = new CategoryService();
     }
 
@@ -36,6 +36,7 @@ class CategoryController extends Controller
             return Response()->json($apiResponse, $apiResponse->statusCode);
         }
     }
+
     public function store(Request $request)
     {
         try {
