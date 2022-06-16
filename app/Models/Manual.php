@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Manual extends Model
 {
     use HasFactory;
+    protected $guarded = [];
 
     //relacion muchos a muchos (copar y pegar en subseccion, section, pasos,)
     public function categories()

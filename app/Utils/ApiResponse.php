@@ -8,8 +8,6 @@ class ApiResponse
     public $message;
     public $data;
 
-
-
     public function __construct(
         $data = [],
         $statusCode = 200,
