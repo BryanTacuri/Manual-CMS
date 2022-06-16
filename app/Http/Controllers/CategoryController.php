@@ -5,82 +5,111 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Utils\ApiResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Services\CategoryService;
+
 
 class CategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Create a new AuthController instance.
      *
-     * @return \Illuminate\Http\Response
+     * @return void
      */
+    private $service;
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['store', 'index', 'getById', 'update', 'delete']]);
+        $this->service = new CategoryService();
+    }
+    /**
+     * Get a JWT via given credentials.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public function index()
     {
-        //
+        try {
+            $categories = $this->service->getAll();
+            $apiResponse = new ApiResponse($categories);
+            $apiResponse->message = 'Se ha obtenido correctamente la lista de categorias';
+            $apiResponse->statusCode = 200;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        } catch (\Exception $e) {
+            $apiResponse = new ApiResponse();
+            $apiResponse->message = $e->getMessage();
+            $apiResponse->statusCode = 500;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        }
+    }
+    public function store(Request $request)
+    {
+        try {
+            $categories = $this->service->create($request);
+            // $input['usuario_id'] = $_REQUEST['usuario_id']; ???
+
+            $apiResponse = new ApiResponse($categories);
+            $apiResponse->message = 'Se ha creado correctamente';
+            $apiResponse->statusCode = 200;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        } catch (\Exception $e) {
+            $apiResponse = new ApiResponse();
+            $apiResponse->message = $e->getMessage();
+            $apiResponse->statusCode = 500;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+
+    public function getById($id)
     {
-        //
+        try {
+            $category = $this->service->getId($id);
+            $apiResponse = new ApiResponse($category);
+            $apiResponse->message = 'Se ha obtenido correctamente la categoria';
+            $apiResponse->statusCode = 200;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        } catch (\Exception $e) {
+            $apiResponse = new ApiResponse();
+            $apiResponse->message = $e->getMessage();
+            $apiResponse->statusCode = 500;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreCategoryRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreCategoryRequest $request)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $category = $this->service->update($request, $id);
+            $apiResponse = new ApiResponse($category);
+            $apiResponse->message = 'Se ha actualizado correctamente';
+            $apiResponse->statusCode = 200;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        } catch (\Exception $e) {
+            $apiResponse = new ApiResponse();
+            $apiResponse->message = $e->getMessage();
+            $apiResponse->statusCode = 500;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Category $category)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Category $category)
+    public function delete(Request $request, $id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateCategoryRequest  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateCategoryRequest $request, Category $category)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Category $category)
-    {
-        //
+        try {
+            $category = $this->service->delete($request, $id);
+            $apiResponse = new ApiResponse($category);
+            $apiResponse->message = 'Se ha eliminado correctamente';
+            $apiResponse->statusCode = 200;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        } catch (\Exception $e) {
+            $apiResponse = new ApiResponse();
+            $apiResponse->message = $e->getMessage();
+            $apiResponse->statusCode = 500;
+            return Response()->json($apiResponse, $apiResponse->statusCode);
+        }
     }
 }

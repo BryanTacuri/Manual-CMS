@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Category;
+
 return [
 
     /*
@@ -43,6 +45,7 @@ return [
         'api' => [
             'driver' => 'jwt',
             'provider' => 'users',
+
             'hash' => false,
         ],
     ],
@@ -69,7 +72,6 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

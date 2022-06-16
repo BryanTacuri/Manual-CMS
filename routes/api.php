@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,9 +28,10 @@ Route::controller(UserController::class)->group(function () {
     Route::post('me', 'me');
 });
 
-
-Route::group(['middleware' => 'jwt.verify'], function () {
-    Route::get('user', function () {
-        return "hola";
-    });
+Route::controller(CategoryController::class)->group(function () {
+    Route::post('category/store', 'store');
+    Route::get('category/index', 'index');
+    Route::get('category/{id}', 'getById');
+    Route::post('category/update/{id} ', 'update');
+    Route::post('category/delete/{id}', 'delete');
 });
