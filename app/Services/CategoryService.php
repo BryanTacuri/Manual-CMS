@@ -11,6 +11,8 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 
 
@@ -18,14 +20,16 @@ class CategoryService
 {
     public function getAll()
     {
-        //VALIDARR SI STATUS I O E NO MOSTRAR
-        $categories = Category::all();
-        return $categories;
+        if ((auth()->user())) {
+            return Category::paginate();
+        } else {
+            return Category::where('status', 'A')->paginate(10);
+        }
     }
+
 
     public function getById($id)
     {
-        //VALIDARR SI STATUS I O E NO MOSTRAR
         return Category::find($id);
     }
 
