@@ -13,22 +13,13 @@ use App\Services\CategoryService;
 
 class CategoryController extends Controller
 {
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
+
     private $service;
     public function __construct()
     {
         $this->middleware('auth:api', ['except' => ['store', 'index', 'getById', 'update', 'delete']]);
         $this->service = new CategoryService();
     }
-    /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
 
     public function index()
     {

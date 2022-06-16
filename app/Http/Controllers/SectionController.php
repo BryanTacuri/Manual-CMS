@@ -58,7 +58,6 @@ class SectionController extends Controller
      */
     public function edit(Section $section)
     {
-        //
     }
 
     /**

@@ -39,7 +39,7 @@ class CategoryService
             return response()->json($validator->errors(), 400);
         } else {
             $category = Category::create($data->all());
-            return response()->json($category, 201);
+            return $category;
         }
     }
 
