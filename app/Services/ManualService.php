@@ -15,8 +15,11 @@ class ManualService
 {
     public function getAll()
     {
-        //VALIDAR SI STATUS I O E NO MOSTRAR
+        //agregar validacion
         $manual = Manual::all();
+        //retornar las categorias de ese manual
+        //retornar las tagg de ese 
+
         return $manual;
     }
 
@@ -50,15 +53,11 @@ class ManualService
         }
     }
 
-    // public function getById($id)
-    // {
-    //     //VALIDARR SI STATUS I O E NO MOSTRAR
-    //     return Manual::find($id);
-    // }
-
     public function getId($id)
     {
         $manual = Manual::find($id);
+        //retornar las categorias de ese manual
+        //retornar las tagg de ese 
         return $manual;
     }
 

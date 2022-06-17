@@ -27,12 +27,6 @@ class CategoryService
         }
     }
 
-
-    public function getById($id)
-    {
-        return Category::find($id);
-    }
-
     public function create($data)
     {
         $validator = Validator::make($data->all(), [
