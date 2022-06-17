@@ -11,21 +11,21 @@ class Tag extends Model
     //relacion muchos a muchos inversa 
     public function manuals()
     {
-        return $this->morphedByMany(Manual::class, 'taggable');
+        return $this->morphedByMany(Manual::class, 'taggable')->withTimestamps();
     }
 
     public function section()
     {
-        return $this->morphedByMany(Section::class, 'taggable');
+        return $this->morphedByMany(Section::class, 'taggable')->withTimestamps();
     }
 
     public function subsection()
     {
-        return $this->morphedByMany(Subsection::class, 'taggable');
+        return $this->morphedByMany(Subsection::class, 'taggable')->withTimestamps();
     }
 
     public function steps()
     {
-        return $this->morphedByMany(Steps::class, 'taggable');
+        return $this->morphedByMany(Steps::class, 'taggable')->withTimestamps();
     }
 }

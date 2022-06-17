@@ -15,7 +15,7 @@ class ManualController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['index', 'update', 'store', 'getById', 'delete']]);
+        $this->middleware('auth:api', ['except' => ['index', 'getById']]);
         $this->service = new ManualService();
     }
 
@@ -23,8 +23,17 @@ class ManualController extends Controller
     {
         try {
             $manuals = $this->service->getAll();
-            $apiResponse = new ApiResponse($manuals);
-            $apiResponse->message = 'Se ha obtenido correctamente la lista de manuales';
+
+            foreach($manuals as $manual){
+                $apiResponse = new ApiResponse($manuals, $manual->categories, $manual->tags);
+            }
+
+            if($manuals->count()){
+                $apiResponse->message = "Se ha obtenido correctamente la lista de manuales"; 
+            }else{
+                $apiResponse->message = "No se han encontrado datos del manual";
+            }
+
             $apiResponse->statusCode = 200;
             return Response()->json($apiResponse, $apiResponse->statusCode);
         } catch (\Exception $e) {
@@ -39,7 +48,7 @@ class ManualController extends Controller
     {
         try {
             $manuals = $this->service->create($request);
-            $apiResponse = new ApiResponse($manuals);
+            $apiResponse = new ApiResponse($manuals, $manuals->categories);
             $apiResponse->message = 'Se ha creado correctamente';
             $apiResponse->statusCode = 200;
             return Response()->json($apiResponse, $apiResponse->statusCode);
@@ -55,8 +64,12 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->getId($id);
-            $apiResponse = new ApiResponse($manual);
-            $apiResponse->message = 'Se ha obtenido correctamente el manual';
+            $apiResponse = new ApiResponse($manual, $manual->categories);
+            if($manual->count()){
+                $apiResponse->message = "Se ha obtenido correctamente el manual"; 
+            }else{
+                $apiResponse->message = "No se han encontrado datos del manual";
+            }
             $apiResponse->statusCode = 200;
             return Response()->json($apiResponse, $apiResponse->statusCode);
         } catch (\Exception $e) {
@@ -71,7 +84,7 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->update($request, $id);
-            $apiResponse = new ApiResponse($manual);
+            $apiResponse = new ApiResponse($manual, $manual->categories);
             $apiResponse->message = 'Se ha actualizado correctamente';
             $apiResponse->statusCode = 200;
             return Response()->json($apiResponse, $apiResponse->statusCode);

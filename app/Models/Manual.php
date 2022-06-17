@@ -14,12 +14,12 @@ class Manual extends Model
     //relacion muchos a muchos (copar y pegar en subseccion, section, pasos,)
     public function categories()
     {
-        return $this->morphToMany(Category::class, 'catable');
+        return $this->morphToMany(Category::class, 'catable')->withTimestamps();
     }
 
     public function tags()
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
     }
 
     //relacion uno a muchos (inversa)

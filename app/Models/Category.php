@@ -19,21 +19,21 @@ class Category extends Model
     //relacion muchos a muchos inversa 
     public function manuals()
     {
-        return $this->morphedByMany(Manual::class, 'catable');
+        return $this->morphedByMany(Manual::class, 'catable')->withTimestamps()->withPivot('user_create');
     }
 
     public function section()
     {
-        return $this->morphedByMany(Section::class, 'catable');
+        return $this->morphedByMany(Section::class, 'catable')->withTimestamps();
     }
 
     public function subsection()
     {
-        return $this->morphedByMany(Subsection::class, 'catable');
+        return $this->morphedByMany(Subsection::class, 'catable')->withTimestamps();
     }
 
     public function steps()
     {
-        return $this->morphedByMany(Steps::class, 'catable');
+        return $this->morphedByMany(Steps::class, 'catable')->withTimestamps();
     }
 }
