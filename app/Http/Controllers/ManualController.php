@@ -12,13 +12,13 @@ use Illuminate\Http\Request;
 class ManualController extends Controller
 {
     private $service;
-    
+
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['index', 'store', 'getById', 'update', 'delete']]);
+        $this->middleware('auth:api', ['except' => ['index', 'update', 'store', 'getById', 'delete']]);
         $this->service = new ManualService();
     }
-    
+
     public function index()
     {
         try {

@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Manual;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -25,11 +27,25 @@ class ManualService
             'description' => 'required|string|max:255',
             'status' => 'required',
             'user_create' => 'required',
+            'categorys'  => 'required',
         ]);
+
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         } else {
-            $manual = Manual::create($data->all());
+            $manual = new Manual();
+            $manual->title = $data->title;
+            $manual->description = $data->description;
+            $manual->status = $data->status;
+            $manual->user_create = $data->user_create;
+            $manual->save();
+
+            $categorysNames = $data->categorys;
+
+            foreach ($categorysNames as $name) {
+                $category = Category::where('name', $name)->first();
+                $manual->categories()->attach($category->id);
+            }
             return $manual;
         }
     }
@@ -57,8 +73,22 @@ class ManualService
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         } else {
-            $manual = Manual::findOrFail($id);
+            /*  $manual = Manual::findOrFail($id);
             $manual->update($request->all());
+            return $manual; */
+            $manual = Manual::findOrFail($id);
+            $manual->title = $request->title;
+            $manual->description = $request->description;
+            $manual->status = $request->status;
+            $manual->user_create = $request->user_create;
+
+            $categorysNames = $request->categorys;
+
+            $manual->categories()->detach();
+            foreach ($categorysNames as $name) {
+                $category = Category::where('name', $name)->first();
+                $manual->categories()->attach($category->id);
+            }
             return $manual;
         }
     }
