@@ -28,8 +28,6 @@ return new class extends Migration
             $table->unsignedBigInteger('user_delete')->nullable();
             $table->foreign('user_delete')->references('id')->on('users')->onDelete('set null');
 
-
-
             $table->unsignedBigInteger('section_id');
             $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
 
