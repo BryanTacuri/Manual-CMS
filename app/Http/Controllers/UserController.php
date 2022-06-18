@@ -6,16 +6,24 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
-class AuthController extends Controller
+class UserController extends Controller
 {
     /**
-     * Create a new AuthController instance.
+     * Create a new UserController instance.
      *
      * @return void
      */
+
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+    }
+
+
 
 
     /**
