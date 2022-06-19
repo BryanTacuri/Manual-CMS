@@ -23,7 +23,6 @@ class Controller extends BaseController
             $this->apiResponse->setData($data);
         } else {
             $this->apiResponse->setMessageError($data);
-            $this->apiResponse->setData(null);
         }
     }
 
