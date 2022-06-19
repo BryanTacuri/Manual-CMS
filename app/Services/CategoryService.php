@@ -3,15 +3,7 @@
 namespace App\Services;
 
 use App\Models\Category;
-use App\Models\User;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\ServiceProvider;
-use PhpParser\Node\Stmt\TryCatch;
-use App\Http\Requests\StoreCategoryRequest;
-use App\Http\Requests\UpdateCategoryRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 class CategoryService
@@ -19,6 +11,10 @@ class CategoryService
     public function getAll()
     {
         try {
+            $categories = Category::all();
+            if (count($categories) == 0) {
+                throw new \Exception('No hay categorias');
+            }
             if ((auth()->user())) {
                 return Category::paginate();
             } else {
@@ -39,7 +35,7 @@ class CategoryService
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
                 $error =  json_decode($jsonErrors, TRUE);
-                return $error;
+                throw new \Exception($error);
             } else {
                 $category = Category::create($data->all());
                 return $category;
@@ -53,10 +49,18 @@ class CategoryService
     {
 
         try {
+            $category = Category::find($id);
+            if ($category == null) {
+                throw new \Exception('No existe esa categoria');
+            }
             if ((auth()->user())) {
-                return Category::find($id);
+                return $category;
             } else {
-                return Category::where('id', $id)->where('status', 'A')->get();
+                if ($category->status == 'A') {
+                    return $category;
+                } else {
+                    throw new \Exception('La categoria no esta activa');
+                }
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -65,6 +69,7 @@ class CategoryService
     public function update($data, $id)
     {
         try {
+
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:255',
                 'user_modifies' => 'required',
@@ -74,6 +79,9 @@ class CategoryService
                 return json_decode($jsonErrors, TRUE);
             } else {
                 $category = Category::findOrFail($id);
+                if (!$category) {
+                    throw new \Exception('No existe esa categoria');
+                }
                 $category->update($data->all());
                 return $category;
             }
@@ -92,9 +100,13 @@ class CategoryService
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
-                return json_decode($jsonErrors, TRUE);
+                $error =  json_decode($jsonErrors, TRUE);
+                throw new \Exception($error);
             } else {
                 $category = Category::findOrFail($id);
+                if (!$category) {
+                    throw new \Exception('No existe esa categoria');
+                }
                 $category->update($data->only('status', 'user_delete', 'date_delete'));
                 return $category;
             }
