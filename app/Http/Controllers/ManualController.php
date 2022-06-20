@@ -2,11 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreManualRequest;
-use App\Http\Requests\UpdateManualRequest;
-use App\Models\Manual;
 use App\Services\ManualService;
-use App\Utils\ApiResponse;
 use Illuminate\Http\Request;
 
 class ManualController extends Controller
@@ -17,98 +13,82 @@ class ManualController extends Controller
     {
         $this->middleware('auth:api', ['except' => ['index', 'getById']]);
         $this->service = new ManualService();
+        parent::__construct();
     }
 
     public function index()
     {
         try {
             $manuals = $this->service->getAll();
-
             foreach($manuals as $manual){
-                $apiResponse = new ApiResponse($manuals, $manual->categories, $manual->tags);
+                if((auth()->user())){
+                    $this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
+                }
+                foreach($manual->categories as $category){
+                    //$category = $manual->categories->where('status', '');
+                    $this->validateErrorOrSuccess($category);
+                    // if($category->status == 'A' &&  !is_object($category)){
+                    //     
+                    // }
+                }
+                //$this->validateErrorOrSuccess($manuals, $manual->categories->where('status', 'A'), $manual->tags);
             }
-
-            if($manuals->count()){
-                $apiResponse->message = "Se ha obtenido correctamente la lista de manuales"; 
-            }else{
-                $apiResponse->message = "No se han encontrado datos del manual";
-            }
-
-            $apiResponse->statusCode = 200;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
         } catch (\Exception $e) {
-            $apiResponse = new ApiResponse();
-            $apiResponse->message = $e->getMessage();
-            $apiResponse->statusCode = 500;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $this->setMessageError($e->getMessage());
         }
+        return $this->returnData();
     }
 
     public function store(Request $request)
     {
         try {
-            $manuals = $this->service->create($request);
-            $apiResponse = new ApiResponse($manuals, $manuals->categories);
-            $apiResponse->message = 'Se ha creado correctamente';
-            $apiResponse->statusCode = 200;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $manual = $this->service->create($request);
+            $this->validateErrorOrSuccess($manual, $manual->categories);
         } catch (\Exception $e) {
-            $apiResponse = new ApiResponse();
-            $apiResponse->message = $e->getMessage();
-            $apiResponse->statusCode = 500;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $this->setMessageError($e->getMessage());
         }
+        return $this->returnData();
     }
 
     public function getById($id)
     {
         try {
             $manual = $this->service->getId($id);
-            $apiResponse = new ApiResponse($manual, $manual->categories);
-            if($manual->count()){
-                $apiResponse->message = "Se ha obtenido correctamente el manual"; 
-            }else{
-                $apiResponse->message = "No se han encontrado datos del manual";
+            if (!is_object($manual)) {
+                throw new \Exception($manual);
             }
-            $apiResponse->statusCode = 200;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $this->validateErrorOrSuccess($manual, $manual->categories);
         } catch (\Exception $e) {
-            $apiResponse = new ApiResponse();
-            $apiResponse->message = $e->getMessage();
-            $apiResponse->statusCode = 500;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $this->setMessageError($e->getMessage());
         }
+        return $this->returnData();
     }
 
     public function update(Request $request, $id)
     {
         try {
             $manual = $this->service->update($request, $id);
-            $apiResponse = new ApiResponse($manual, $manual->categories);
-            $apiResponse->message = 'Se ha actualizado correctamente';
-            $apiResponse->statusCode = 200;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            if (!is_object($manual)) {
+                throw new \Exception($manual);
+            }
+            $this->validateErrorOrSuccess($manual, $manual->categories);
         } catch (\Exception $e) {
-            $apiResponse = new ApiResponse();
-            $apiResponse->message = $e->getMessage();
-            $apiResponse->statusCode = 500;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $this->setMessageError($e->getMessage());
         }
+        return $this->returnData();
     }
 
     public function delete(Request $request, $id)
     {
         try {
             $manual = $this->service->delete($request, $id);
-            $apiResponse = new ApiResponse($manual);
-            $apiResponse->message = 'Se ha eliminado correctamente';
-            $apiResponse->statusCode = 200;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            if (!is_object($manual)) {
+                throw new \Exception($manual);
+            }
+            $this->validateErrorOrSuccess($manual, $manual->categories);
         } catch (\Exception $e) {
-            $apiResponse = new ApiResponse();
-            $apiResponse->message = $e->getMessage();
-            $apiResponse->statusCode = 500;
-            return Response()->json($apiResponse, $apiResponse->statusCode);
+            $this->setMessageError($e->getMessage());
         }
+        return $this->returnData();
     }
 }
