@@ -25,6 +25,12 @@ class ManualService
         }
     }
 
+    public function getCategoryManual($id){
+        $manual = Manual::find($id);
+        $categories = $manual->categories()->where('status', 'A')->get();
+        return $categories;
+    }
+
     public function create($data)
     {
         try{
@@ -71,11 +77,10 @@ class ManualService
             if ((auth()->user())) {
                 return $manual;
             } else {
-                if($manual->status == 'A'){
-                    return $manual;
-                }else{
+                if($manual->status != 'A'){
                     throw new \Exception('El manual no está activo');
                 }
+                return $manual;
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -115,7 +120,7 @@ class ManualService
                     $category = Category::where('name', $name)->where('status', 'A')->first();
                     
                     if($category!=null){
-                        $manual->categories()->attach($category->id, ['user_modifies'=>$data->user_modifies]);
+                        $manual->categories()->attach($category->id, ['user_create'=>$data->user_create, 'user_modifies'=>$data->user_modifies]);
                     }
                 }
                 $manual->update();

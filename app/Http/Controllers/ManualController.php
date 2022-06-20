@@ -20,18 +20,10 @@ class ManualController extends Controller
     {
         try {
             $manuals = $this->service->getAll();
-            foreach($manuals as $manual){
-                if((auth()->user())){
-                    $this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
-                }
-                foreach($manual->categories as $category){
-                    //$category = $manual->categories->where('status', '');
-                    $this->validateErrorOrSuccess($category);
-                    // if($category->status == 'A' &&  !is_object($category)){
-                    //     
-                    // }
-                }
-                //$this->validateErrorOrSuccess($manuals, $manual->categories->where('status', 'A'), $manual->tags);
+            foreach($manuals as $key=>$manual){
+                $manual->categories = $this->service->getCategoryManual($manuals[$key]->id);
+                $this->validateErrorOrSuccess($manuals, $manual->categories);
+                //$this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
             }
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
@@ -57,6 +49,7 @@ class ManualController extends Controller
             if (!is_object($manual)) {
                 throw new \Exception($manual);
             }
+            $manual->categories = $this->service->getCategoryManual($manual->id);
             $this->validateErrorOrSuccess($manual, $manual->categories);
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
