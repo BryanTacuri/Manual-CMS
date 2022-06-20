@@ -20,7 +20,10 @@ class ManualController extends Controller
     {
         try {
             $manuals = $this->service->getAll();
-            foreach($manuals as $key=>$manual){
+            if (!is_object($manuals)) {
+                throw new \Exception($manuals);
+            }
+            foreach ($manuals as $key => $manual) {
                 $manual->categories = $this->service->getCategoryManual($manuals[$key]->id);
                 $this->validateErrorOrSuccess($manuals, $manual->categories);
                 //$this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
@@ -35,6 +38,9 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->create($request);
+            if (!is_object($manual)) {
+                throw new \Exception($manual);
+            }
             $this->validateErrorOrSuccess($manual, $manual->categories);
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
