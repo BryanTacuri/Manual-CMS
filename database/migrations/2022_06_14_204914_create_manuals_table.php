@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('manuals', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('title')->unique();
             $table->text('description');
             $table->enum('status', ['A', 'I', 'E'])->default('A');
             $table->unsignedBigInteger('user_create')->nullable();

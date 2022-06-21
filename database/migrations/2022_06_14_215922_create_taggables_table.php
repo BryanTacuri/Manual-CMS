@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('taggables', function (Blueprint $table) {
-            $table->id();
+
             $table->unsignedBigInteger('taggable_id');
             $table->string('taggable_type');
             $table->unsignedBigInteger('tag_id');
@@ -24,8 +24,9 @@ return new class extends Migration
             $table->foreign('user_create')->references('id')->on('users')->onDelete('set null');
             $table->unsignedBigInteger('user_modifies')->nullable();
             $table->foreign('user_modifies')->references('id')->on('users')->onDelete('set null');
-            
+
             $table->timestamps();
+            $table->primary(['taggable_id', 'taggable_type', 'tag_id']);
         });
     }
 
