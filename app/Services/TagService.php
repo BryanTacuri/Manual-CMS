@@ -2,23 +2,22 @@
 
 namespace App\Services;
 
-use App\Models\Category;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
 
-
-class CategoryService
+class TagService
 {
     public function getAll()
     {
         try {
-            $categories = Category::all();
-            if (count($categories) == 0) {
-                throw new \Exception('No hay categorias');
+            $tags = Tag::all();
+            if (count($tags) == 0) {
+                throw new \Exception('No hay tags');
             }
             if ((auth()->user())) {
-                return Category::latest('id')->paginate(10);
+                return Tag::paginate();
             } else {
-                return Category::where('status', 'A')->latest('id')->paginate(10);
+                return Tag::where('status', 'A')->paginate(10);
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -37,8 +36,8 @@ class CategoryService
                 $error =  json_decode($jsonErrors, TRUE);
                 throw new \Exception($error);
             } else {
-                $category = Category::create($data->all());
-                return $category;
+                $tag = Tag::create($data->all());
+                return $tag;
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -49,42 +48,42 @@ class CategoryService
     {
 
         try {
-            $category = Category::find($id);
-            if ($category == null) {
-                throw new \Exception('No existe esa categoria');
+            $tag = Tag::find($id);
+            if ($tag == null) {
+                throw new \Exception('No existe esa tag');
             }
             if ((auth()->user())) {
-                return $category;
+                return $tag;
             } else {
-                if ($category->status == 'A') {
-                    return $category;
+                if ($tag->status == 'A') {
+                    return $tag;
                 } else {
-                    throw new \Exception('La categoria no esta activa');
+                    throw new \Exception('La tag no esta activa');
                 }
             }
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
+
     public function update($data, $id)
     {
         try {
-
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:255',
-                'user_modifies' => 'required',
+                'user_update' => 'required',
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
                 $error =  json_decode($jsonErrors, TRUE);
                 throw new \Exception($error);
             } else {
-                $category = Category::find($id);
-                if (!$category) {
-                    throw new \Exception('No existe esa categoria');
+                $tag = Tag::find($id);
+                if ($tag == null) {
+                    throw new \Exception('No existe esa tag');
                 }
-                $category->update($data->all());
-                return $category;
+                $tag->update($data->all());
+                return $tag;
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -104,12 +103,12 @@ class CategoryService
                 $error =  json_decode($jsonErrors, TRUE);
                 throw new \Exception($error);
             } else {
-                $category = Category::find($id);
-                if (!$category) {
-                    throw new \Exception('No existe esa categoria');
+                $tag = Tag::find($id);
+                if (!$tag) {
+                    throw new \Exception('No existe esa tag');
                 }
-                $category->update($data->only('status', 'user_delete', 'date_delete'));
-                return $category;
+                $tag->update($data->only('status', 'user_delete', 'date_delete'));
+                return $tag;
             }
         } catch (\Exception $e) {
             return $e->getMessage();

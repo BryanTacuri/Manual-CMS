@@ -2,12 +2,8 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Models\Category;
-use App\Utils\ApiResponse;
 use Illuminate\Http\Request;
 use App\Services\CategoryService;
-use App\Http\Controllers\ManualCMSController;
 
 class CategoryController extends Controller
 {

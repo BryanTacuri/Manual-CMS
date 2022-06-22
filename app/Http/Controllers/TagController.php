@@ -3,84 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTagRequest;
+use Illuminate\Http\Request;
 use App\Http\Requests\UpdateTagRequest;
 use App\Models\Tag;
+use App\Services\TagService;
 
 class TagController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    private $service;
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['index', 'getById']]);
+        $this->service = new TagService();
+        parent::__construct();
+    }
+
     public function index()
     {
-        //
+        try {
+            $tags = $this->service->getAll();
+            $this->validateErrorOrSuccess($tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
+        try {
+            $tags = $this->service->create($request);
+            $this->validateErrorOrSuccess($tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreTagRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreTagRequest $request)
+
+    public function getById($id)
     {
-        //
+        try {
+            $tag = $this->service->getId($id);
+            $this->validateErrorOrSuccess($tag);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Tag $tag)
+    public function update(Request $request, $id)
     {
-        //
+
+        try {
+            $tag = $this->service->update($request, $id);
+            $this->validateErrorOrSuccess($tag);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Tag $tag)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateTagRequest  $request
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateTagRequest $request, Tag $tag)
+    public function delete(Request $request, $id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Tag $tag)
-    {
-        //
+        try {
+            $tag = $this->service->delete($request, $id);
+            $this->validateErrorOrSuccess($tag);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
     }
 }
