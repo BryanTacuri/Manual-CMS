@@ -4,15 +4,16 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Manual;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
 
 class ManualService
 {
     public function getAll()
     {
-        try{
+        try {
             $manuals = Manual::all();
-            if(count($manuals) == 0){
+            if (count($manuals) == 0) {
                 throw new \Exception('No hay manuales');
             }
             if ((auth()->user())) {
@@ -20,20 +21,28 @@ class ManualService
             } else {
                 return Manual::where('status', 'A')->latest('id')->paginate(10);
             }
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
-    public function getCategoryManual($id){
+    public function getCategoryManual($id)
+    {
         $manual = Manual::find($id);
         $categories = $manual->categories()->where('status', 'A')->get();
         return $categories;
     }
 
+    public function getTagManual($id)
+    {
+        $manual = Manual::find($id);
+        $tags = $manual->tags()->where('status', 'A')->get();
+        return $tags;
+    }
+
     public function create($data)
     {
-        try{
+        try {
             $validator = Validator::make($data->all(), [
                 'title' => 'required|string|max:50',
                 'description' => 'required|string|max:255',
@@ -51,33 +60,44 @@ class ManualService
                 $manual->status = $data->status;
                 $manual->user_create = $data->user_create;
                 $manual->save();
-    
+
                 $categorysNames = $data->categorys;
                 foreach ($categorysNames as $name) {
                     $category = Category::where('name', $name)->where('status', 'A')->first();
-                    
-                    if($category!=null){
-                        $manual->categories()->attach($category->id, ['user_create'=>$data->user_create]);
+
+                    if ($category != null) {
+                        $manual->categories()->attach($category->id, ['user_create' => $data->user_create]);
                     }
                 }
+
+                $tagsNames = $data->tags;
+                foreach ($tagsNames as $name) {
+                    $tag = Tag::where('name', $name)->where('status', 'A')->first();
+
+                    if ($tag != null) {
+                        $manual->tags()->attach($tag->id, ['user_create' => $data->user_create]);
+                    }
+                }
+
+
                 return $manual;
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
     public function getId($id)
     {
-        try{
+        try {
             $manual = Manual::find($id);
-            if($manual == null){
+            if ($manual == null) {
                 throw new \Exception('No existe este manual');
             }
             if ((auth()->user())) {
                 return $manual;
             } else {
-                if($manual->status != 'A'){
+                if ($manual->status != 'A') {
                     throw new \Exception('El manual no está activo');
                 }
                 return $manual;
@@ -89,7 +109,7 @@ class ManualService
 
     public function update($data, $id)
     {
-        try{
+        try {
             $validator = Validator::make($data->all(), [
                 'title' => 'required|string|max:50',
                 'description' => 'required|string|max:255',
@@ -103,7 +123,7 @@ class ManualService
             } else {
                 $manual = Manual::find($id);
 
-                if($manual == null){
+                if ($manual == null) {
                     throw new \Exception('No existe este manual');
                 }
 
@@ -112,15 +132,15 @@ class ManualService
                 $manual->status = $data->status;
                 $manual->user_create = $data->user_create;
                 $manual->user_modifies = $data->user_modifies;
-    
+
                 $categorysNames = $data->categories;
-    
+
                 $manual->categories()->detach();
                 foreach ($categorysNames as $name) {
                     $category = Category::where('name', $name)->where('status', 'A')->first();
-                    
-                    if($category!=null){
-                        $manual->categories()->attach($category->id, ['user_create'=>$data->user_create, 'user_modifies'=>$data->user_modifies]);
+
+                    if ($category != null) {
+                        $manual->categories()->attach($category->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
                     }
                 }
                 $manual->update();
@@ -133,7 +153,7 @@ class ManualService
 
     public function delete($request, $id)
     {
-        try{
+        try {
             $validator = Validator::make($request->all(), [
                 'status' => 'required|string|max:1',
                 'user_delete' => 'required',
@@ -146,7 +166,7 @@ class ManualService
             } else {
                 $manual = Manual::find($id);
 
-                if($manual == null){
+                if ($manual == null) {
                     throw new \Exception('No existe este manual');
                 }
 

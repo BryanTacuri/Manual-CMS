@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ManualController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,15 @@ Route::controller(CategoryController::class)->group(function () {
     Route::post('category/update/{id}', 'update');
     Route::post('category/delete/{id}', 'delete');
 });
+
+Route::controller(TagController::class)->group(function () {
+    Route::post('tag/store', 'store');
+    Route::get('tag/index', 'index');
+    Route::get('tag/{id}', 'getById');
+    Route::post('tag/update/{id}', 'update');
+    Route::post('tag/delete/{id}', 'delete');
+});
+
 
 Route::controller(ManualController::class)->group(function () {
     Route::post('manual/store', 'store');
