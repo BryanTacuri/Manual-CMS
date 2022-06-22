@@ -27,7 +27,6 @@ class ManualController extends Controller
                 $manual->categories = $this->service->getCategoryManual($manuals[$key]->id);
                 $manual->tags = $this->service->getTagManual($manuals[$key]->id);
                 $this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
-                //$this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
             }
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
