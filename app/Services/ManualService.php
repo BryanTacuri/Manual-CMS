@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Manual;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
 
 class ManualService
@@ -30,6 +31,13 @@ class ManualService
         $manual = Manual::find($id);
         $categories = $manual->categories()->where('status', 'A')->get();
         return $categories;
+    }
+
+    public function getTagManual($id)
+    {
+        $manual = Manual::find($id);
+        $tags = $manual->tags()->where('status', 'A')->get();
+        return $tags;
     }
 
     public function create($data)
@@ -61,6 +69,17 @@ class ManualService
                         $manual->categories()->attach($category->id, ['user_create' => $data->user_create]);
                     }
                 }
+
+                $tagsNames = $data->tags;
+                foreach ($tagsNames as $name) {
+                    $tag = Tag::where('name', $name)->where('status', 'A')->first();
+
+                    if ($tag != null) {
+                        $manual->tags()->attach($tag->id, ['user_create' => $data->user_create]);
+                    }
+                }
+
+
                 return $manual;
             }
         } catch (\Exception $e) {
