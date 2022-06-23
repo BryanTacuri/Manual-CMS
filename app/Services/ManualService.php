@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ManualService
 {
-    public function getModel(){
-        return New Manual();
-    }
 
     public function getAll()
     {
@@ -59,8 +56,9 @@ class ManualService
             ]);
             if ($validator->fails()) {
                 $jsonErrors = $validator->errors();
-                $error = json_decode($jsonErrors, TRUE);
+                $error = json_encode($jsonErrors, TRUE);
                 throw new \Exception($error);
+                dd($error);
             }
             $manual = new Manual();
             $manual->title = $data->title;
@@ -69,10 +67,10 @@ class ManualService
             $manual->user_create = $data->user_create;
             $manual->save();
 
-            $this->actionElements($manual, $data, 'categories', New Category(), 'create');
+            $this->actionElements($manual, $data, 'categories', new Category(), 'create');
 
-            $this->actionElements($manual, $data, 'tags', New Tag(), 'create');
-            
+            $this->actionElements($manual, $data, 'tags', new Tag(), 'create');
+
             return $manual;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -90,7 +88,7 @@ class ManualService
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
+                $error =  json_encode($jsonErrors, TRUE);
                 throw new \Exception($error);
             }
             $manual = Manual::find($id);
@@ -104,10 +102,10 @@ class ManualService
             $manual->user_modifies = $data->user_modifies;
 
             $manual->categories()->detach();
-            $this->actionElements($manual, $data, 'categories', New Category(), 'update');
+            $this->actionElements($manual, $data, 'categories', new Category(), 'update');
 
             $manual->tags()->detach();
-            $this->actionElements($manual, $data, 'tags', New Tag(), 'update');
+            $this->actionElements($manual, $data, 'tags', new Tag(), 'update');
 
             $manual->update();
             return $manual;
@@ -116,18 +114,19 @@ class ManualService
         }
     }
 
-    private function actionElements($manual, $data, $elementActions, $model, $action){
-        try{
+    private function actionElements($manual, $data, $elementActions, $model, $action)
+    {
+        try {
             foreach ($data->$elementActions as $name) {
                 $element = $model::where('name', $name)->where('status', 'A')->first();
                 if ($element != null && $action == 'create') {
                     $manual->$elementActions()->attach($element->id, ['user_create' => $data->user_create]);
                 }
-                if($element != null && $action == 'update'){
+                if ($element != null && $action == 'update') {
                     $manual->$elementActions()->attach($element->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
                 }
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
@@ -142,7 +141,7 @@ class ManualService
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
+                $error =  json_encode($jsonErrors, TRUE);
                 throw new \Exception($error);
             }
             $manual = Manual::find($id);
@@ -151,6 +150,19 @@ class ManualService
             }
             $manual->update($request->only('status', 'user_delete', 'date_delete'));
             return $manual;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function getSectionOfManual($id)
+    {
+        try {
+            $manual = Manual::find($id);
+            if ($manual == null) {
+                throw new \Exception('No existe este manual');
+            }
+            return $manual->sections;
         } catch (\Exception $e) {
             return $e->getMessage();
         }

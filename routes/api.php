@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ManualController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -53,4 +54,13 @@ Route::controller(ManualController::class)->group(function () {
     Route::get('manual/{id}', 'getById');
     Route::post('manual/update/{id}', 'update');
     Route::post('manual/delete/{id}', 'delete');
+    Route::get('manual/{id}/section', 'sectionOfManual');
+});
+
+Route::controller(SectionController::class)->group(function () {
+    Route::post('section/store', 'store');
+    Route::get('section/index', 'index');
+    Route::get('section/{id}', 'getById');
+    Route::post('section/update/{id}', 'update');
+    Route::post('section/delete/{id}', 'delete');
 });

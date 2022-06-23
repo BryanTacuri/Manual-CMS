@@ -68,6 +68,9 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->update($request, $id);
+            if (!is_object($manual)) {
+                throw new \Exception($manual);
+            }
             $manual->categories = $this->getElements($manual, 'categories');
             $manual->tags = $this->getElements($manual, 'tags');
             $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
@@ -81,9 +84,30 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->delete($request, $id);
+            if (!is_object($manual)) {
+                throw new \Exception($manual);
+            }
             $manual->categories = $this->getElements($manual, 'categories');
             $manual->tags = $this->getElements($manual, 'tags');
             $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
+    }
+
+    public function sectionOfManual($id)
+    {
+        try {
+            $sections = $this->service->getSectionOfManual($id);
+            if (!is_object($sections)) {
+                throw new \Exception($sections);
+            }
+            foreach ($sections as $manual) {
+                $manual->categories = $this->getElements($manual, 'categories');
+                $manual->tags = $this->getElements($manual, 'tags');
+                $this->validateErrorOrSuccess($sections, $manual->categories, $manual->tags);
+            }
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
         }

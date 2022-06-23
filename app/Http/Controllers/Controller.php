@@ -46,11 +46,12 @@ class Controller extends BaseController
         return $this->apiResponse->returnData();
     }
 
-    public function getElements($model, $element){
-        try{
+    public function getElements($model, $element)
+    {
+        try {
             $element = $model->$element()->where('status', 'A')->get();
             return $element;
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
