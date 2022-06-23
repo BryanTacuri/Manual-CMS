@@ -36,11 +36,6 @@ class Controller extends BaseController
         $this->apiResponse->setStatusCode($statusCode);
     }
 
-    /*   public function setMessageSucces($message)
-    {
-        $this->apiResponse->setMessageSucces($message);
-    } */
-
     public function setMessageError($message)
     {
         $this->apiResponse->setMessageError($message);
@@ -49,5 +44,14 @@ class Controller extends BaseController
     public function returnData()
     {
         return $this->apiResponse->returnData();
+    }
+
+    public function getElements($model, $element){
+        try{
+            $element = $model->$element()->where('status', 'A')->get();
+            return $element;
+        }catch (\Exception $e) {
+            return $e->getMessage();
+        }
     }
 }

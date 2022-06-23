@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 class ManualController extends Controller
 {
     private $service;
-    private $action;
 
     public function __construct()
     {
@@ -24,14 +23,10 @@ class ManualController extends Controller
             if (!is_object($manuals)) {
                 throw new \Exception($manuals);
             }
-            foreach ($manuals as $key => $manual) {
-                $manual->categories = $this->service->getCategoryManual($manuals[$key]->id);
-                $manual->tags = $this->service->getTagManual($manuals[$key]->id);
+            foreach ($manuals as $manual) {
+                $manual->categories = $this->getElements($manual, 'categories');
+                $manual->tags = $this->getElements($manual, 'tags');
                 $this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
-<<<<<<< Updated upstream
-                //$this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
-=======
->>>>>>> Stashed changes
             }
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
@@ -60,8 +55,8 @@ class ManualController extends Controller
             if (!is_object($manual)) {
                 throw new \Exception($manual);
             }
-            $manual->categories = $this->service->getCategoryManual($manual->id);
-            $manual->tags = $this->service->getTagManual($manual->id);
+            $manual->categories = $this->getElements($manual, 'categories');
+            $manual->tags = $this->getElements($manual, 'tags');
             $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
@@ -72,8 +67,10 @@ class ManualController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $this->action = "update";
-            $this->actions($request, $id, $this->action);
+            $manual = $this->service->update($request, $id);
+            $manual->categories = $this->getElements($manual, 'categories');
+            $manual->tags = $this->getElements($manual, 'tags');
+            $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
         }
@@ -83,19 +80,13 @@ class ManualController extends Controller
     public function delete(Request $request, $id)
     {
         try {
-            $this->action = "delete";
-            $this->actions($request, $id, $this->action);
+            $manual = $this->service->delete($request, $id);
+            $manual->categories = $this->getElements($manual, 'categories');
+            $manual->tags = $this->getElements($manual, 'tags');
+            $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
         }
         return $this->returnData();
-    }
-
-    private function actions(Request $request, $id, $action){
-        $manual = $this->service->$action($request, $id);
-        if (!is_object($manual)) {
-            throw new \Exception($manual);
-        }
-        $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
     }
 }

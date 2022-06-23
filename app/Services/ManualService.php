@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Validator;
 
 class ManualService
 {
-    private $elementManual;
+    public function getModel(){
+        return New Manual();
+    }
 
     public function getAll()
     {
@@ -23,70 +25,6 @@ class ManualService
             }
             return Manual::where('status', 'A')->latest('id')->paginate(10);
         } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function getCategoryManual($id)
-    {
-        try{
-            $this->elementManual = "categories";
-            $categories = $this->getElementsManual($id, $this->elementManual);
-            return $categories;
-        }catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function getTagManual($id)
-<<<<<<< Updated upstream
-    {
-        $manual = Manual::find($id);
-        $tags = $manual->tags()->where('status', 'A')->get();
-        return $tags;
-    }
-
-    public function create($data)
-=======
->>>>>>> Stashed changes
-    {
-        try{
-            $this->elementManual = "tags";
-            $tags = $this->getElementsManual($id, $this->elementManual);
-            return $tags;
-        }catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-<<<<<<< Updated upstream
-                    if ($category != null) {
-                        $manual->categories()->attach($category->id, ['user_create' => $data->user_create]);
-                    }
-                }
-
-                $tagsNames = $data->tags;
-                foreach ($tagsNames as $name) {
-                    $tag = Tag::where('name', $name)->where('status', 'A')->first();
-
-                    if ($tag != null) {
-                        $manual->tags()->attach($tag->id, ['user_create' => $data->user_create]);
-                    }
-                }
-
-
-                return $manual;
-=======
-    private function getElementsManual($id, $elementManual){
-        try{
-            $manual = Manual::find($id);
-            if ($manual == null) {
-                throw new \Exception('No existe este manual');
->>>>>>> Stashed changes
-            }
-            $element = $manual->$elementManual()->where('status', 'A')->get();
-            return $element;
-        }catch (\Exception $e) {
             return $e->getMessage();
         }
     }
@@ -129,23 +67,12 @@ class ManualService
             $manual->description = $data->description;
             $manual->status = $data->status;
             $manual->user_create = $data->user_create;
-
-            $categorysNames = $data->categories;
-            foreach ($categorysNames as $name) {
-                $category = Category::where('name', $name)->where('status', 'A')->first();
-                if ($category != null) {
-                    $manual->categories()->attach($category->id, ['user_create' => $data->user_create]);
-                }
-            }
-
-            $tagsNames = $data->tags;
-            foreach ($tagsNames as $name) {
-                $tag = Tag::where('name', $name)->where('status', 'A')->first();
-                if ($tag != null) {
-                    $manual->tags()->attach($tag->id, ['user_create' => $data->user_create]);
-                }
-            }
             $manual->save();
+
+            $this->actionElements($manual, $data, 'categories', New Category(), 'create');
+
+            $this->actionElements($manual, $data, 'tags', New Tag(), 'create');
+            
             return $manual;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -176,26 +103,31 @@ class ManualService
             $manual->user_create = $data->user_create;
             $manual->user_modifies = $data->user_modifies;
 
-            $categorysNames = $data->categories;
             $manual->categories()->detach();
-            foreach ($categorysNames as $name) {
-                $category = Category::where('name', $name)->where('status', 'A')->first();
-                if ($category != null) {
-                    $manual->categories()->attach($category->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
-                }
-            }
+            $this->actionElements($manual, $data, 'categories', New Category(), 'update');
 
-            $tagsNames = $data->tags;
             $manual->tags()->detach();
-            foreach ($tagsNames as $name) {
-                $tag = Tag::where('name', $name)->where('status', 'A')->first();
-                if ($tag != null) {
-                    $manual->tags()->attach($tag->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
-                }
-            }
+            $this->actionElements($manual, $data, 'tags', New Tag(), 'update');
+
             $manual->update();
             return $manual;
         } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    private function actionElements($manual, $data, $elementActions, $model, $action){
+        try{
+            foreach ($data->$elementActions as $name) {
+                $element = $model::where('name', $name)->where('status', 'A')->first();
+                if ($element != null && $action == 'create') {
+                    $manual->$elementActions()->attach($element->id, ['user_create' => $data->user_create]);
+                }
+                if($element != null && $action == 'update'){
+                    $manual->$elementActions()->attach($element->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
+                }
+            }
+        }catch (\Exception $e) {
             return $e->getMessage();
         }
     }

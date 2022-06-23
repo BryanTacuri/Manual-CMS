@@ -2,7 +2,6 @@
 
 namespace App\Utils;
 
-
 class ApiResponse
 {
     public $statusCode;
@@ -27,11 +26,6 @@ class ApiResponse
     {
         $this->statusCode = $statusCode;
     }
-
-    /*  public function setMessageSucces($message)
-    {
-        $this->message = $message;
-    } */
 
     public function setMessageError($message)
     {
