@@ -13,21 +13,19 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('files', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('path');
-            $table->string('type');
-            $table->string('size');
-            $table->string('extension');
-            $table->enum('status', ['A', 'I', 'E'])->default('A');
+        Schema::create('filables', function (Blueprint $table) {
+            $table->unsignedBigInteger('filable_id');
+            $table->string('filable_type');
+            $table->unsignedBigInteger('file_id');
+            $table->foreign('file_id')->references('id')->on('files')->onDelete('cascade');
+
             $table->unsignedBigInteger('user_create')->nullable();
             $table->foreign('user_create')->references('id')->on('users')->onDelete('set null');
             $table->unsignedBigInteger('user_modifies')->nullable();
             $table->foreign('user_modifies')->references('id')->on('users')->onDelete('set null');
-            $table->unsignedBigInteger('user_delete')->nullable();
-            $table->foreign('user_delete')->references('id')->on('users')->onDelete('set null');
-            $table->dateTime('date_delete')->nullable();
+
+            $table->primary(['filable_id', 'filable_type', 'file_id']);
+
             $table->timestamps();
         });
     }
@@ -39,6 +37,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('files');
+        Schema::dropIfExists('filables');
     }
 };

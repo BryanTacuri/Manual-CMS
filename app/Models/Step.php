@@ -22,7 +22,7 @@ class Step extends Model
     //relacion uno a muchos (inversa)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTimestamps();;
     }
 
     public function subsection()
