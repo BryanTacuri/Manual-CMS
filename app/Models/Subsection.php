@@ -10,28 +10,28 @@ class Subsection extends Model
     use HasFactory;
     public function categories()
     {
-        return $this->morphToMany(Category::class, 'catable');
+        return $this->morphToMany(Category::class, 'catable')->withTimestamps();
     }
 
     public function tags()
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
     }
 
     //relacion uno a muchos (inversa)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTimestamps();
     }
 
     public function section()
     {
-        return $this->belongsTo(Section::class);
+        return $this->belongsTo(Section::class)->withTimestamps();
     }
 
     //Relación uno a muchos
     public function steps()
     {
-        return $this->hasMany(Steps::class);
+        return $this->hasMany(Steps::class)->withTimestamps();
     }
 }

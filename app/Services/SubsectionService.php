@@ -2,24 +2,23 @@
 
 namespace App\Services;
 
-use App\Models\Section;
+use App\Models\Subsection;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Category;
 
-class SectionService
+class SubsectionService
 {
     public function getAll()
     {
         try {
-            $sections = Section::all();
-            if (count($sections) == 0) {
-                throw new \Exception('No hay secciones');
+            $subsections = Subsection::all();
+            if (count($subsections) == 0) {
+                throw new \Exception('No hay subsecciones');
             }
             if ((auth()->user())) {
-                return Section::paginate();
+                return Subsection::latest('id')->paginate(10);
             } else {
-                return Section::where('status', 'A')->paginate(10);
+                return Subsection::where('status', 'A')->latest('id')->paginate(10);
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -33,27 +32,24 @@ class SectionService
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'status' => 'required|string|max:1',
-                'manual_id' => 'required',
+                'section_id' => 'required',
                 'user_create' => 'required',
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
                 $error =  json_encode($jsonErrors, TRUE);
-
                 throw new \Exception($error);
             }
-            $section = new Section();
-            $section->title = $data->title;
-            $section->description = $data->description;
-            $section->status = $data->status;
-            $section->manual_id = $data->manual_id;
-            $section->user_create = $data->user_create;
-            $section->save();
+            $subsection = new Subsection();
+            $subsection->title = $data->title;
+            $subsection->description = $data->description;
+            $subsection->status = $data->status;
+            $subsection->section_id = $data->section_id;
+            $subsection->user_create = $data->user_create;
+            $subsection->save();
 
-            $this->actionElements($section, $data, 'categories', new Category(), 'create');
-
-            $this->actionElements($section, $data, 'tags', new Tag(), 'create');
-            return $section;
+            $this->actionElements($subsection, $data, 'tags', new Tag(), 'create');
+            return $subsection;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
@@ -61,18 +57,19 @@ class SectionService
 
     public function getId($id)
     {
+
         try {
-            $section = Section::find($id);
-            if ($section == null) {
-                throw new \Exception('No existe esa sección');
+            $subsection = Subsection::find($id);
+            if ($subsection == null) {
+                throw new \Exception('No existe esta subsección');
             }
             if ((auth()->user())) {
-                return $section;
+                return $subsection;
             } else {
-                if ($section->status == 'A') {
-                    return $section;
+                if ($subsection->status == 'A') {
+                    return $subsection;
                 } else {
-                    throw new \Exception('No existe esa sección');
+                    throw new \Exception('No existe esa subsección');
                 }
             }
         } catch (\Exception $e) {
@@ -88,8 +85,8 @@ class SectionService
                 'title' => 'required|string|max:50',
                 'description' => 'required|string|max:255',
                 'status' => 'required|string|max:1',
+                'section_id' => 'required',
                 'user_modifies' => 'required',
-                'manual_id' => 'required',
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
@@ -98,25 +95,22 @@ class SectionService
                 throw new \Exception($error);
             }
 
-            $section = Section::find($id);
-            if ($section == null) {
-                throw new \Exception('No existe este section');
+            $subsection = Subsection::find($id);
+            if ($subsection == null) {
+                throw new \Exception('No existe esta subsección');
             }
-            $section->title = $data->title;
-            $section->description = $data->description;
-            $section->status = $data->status;
-            $section->user_create = $data->user_create;
-            $section->user_modifies = $data->user_modifies;
-            $section->manual_id = $data->manual_id;
+            $subsection->title = $data->title;
+            $subsection->description = $data->description;
+            $subsection->status = $data->status;
+            $subsection->user_create = $data->user_create;
+            $subsection->user_modifies = $data->user_modifies;
+            $subsection->section_id = $data->section_id;
 
-            $section->categories()->detach();
-            $this->actionElements($section, $data, 'categories', new Category(), 'update');
+            $subsection->tags()->detach();
+            $this->actionElements($subsection, $data, 'tags', new Tag(), 'update');
 
-            $section->tags()->detach();
-            $this->actionElements($section, $data, 'tags', new Tag(), 'update');
-
-            $section->update();
-            return $section;
+            $subsection->update();
+            return $subsection;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
@@ -135,12 +129,12 @@ class SectionService
                 $error =  json_encode($jsonErrors, TRUE);
                 throw new \Exception($error);
             }
-            $section = Section::find($id);
-            if ($section == null) {
-                throw new \Exception('No existe este section');
+            $subsection = Subsection::find($id);
+            if ($subsection == null) {
+                throw new \Exception('No existe esta subsección');
             }
-            $section->update($request->only('status', 'user_delete', 'date_delete'));
-            return $section;
+            $subsection->update($request->only('status', 'user_delete', 'date_delete'));
+            return $subsection;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
@@ -158,19 +152,6 @@ class SectionService
                     $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
                 }
             }
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function getSubsectionOfSection($id)
-    {
-        try {
-            $section = Section::find($id);
-            if ($section == null) {
-                throw new \Exception('No existe este section');
-            }
-            return $section->subsections;
         } catch (\Exception $e) {
             return $e->getMessage();
         }

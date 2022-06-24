@@ -2,85 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreSubsectionRequest;
-use App\Http\Requests\UpdateSubsectionRequest;
-use App\Models\Subsection;
+use App\Services\SubsectionService;
+use Illuminate\Http\Request;
 
 class SubsectionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    private $service;
+
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['index', 'getById']]);
+        $this->service = new SubsectionService();
+        parent::__construct();
+    }
+
     public function index()
     {
-        //
+        try {
+            $subsections = $this->service->getAll();
+            if (!is_object($subsections)) {
+                throw new \Exception($subsections);
+            }
+            foreach ($subsections as $subsection) {
+                $subsection->tags = $this->getElements($subsection, 'tags');
+                $this->validateErrorOrSuccess($subsections, $subsection->tags);
+            }
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
+        try {
+            $subsection = $this->service->create($request);
+            if (!is_object($subsection)) {
+                throw new \Exception($subsection);
+            }
+            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreSubsectionRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreSubsectionRequest $request)
+    public function getById($id)
     {
-        //
+        try {
+            $subsection = $this->service->getId($id);
+            if (!is_object($subsection)) {
+                throw new \Exception($subsection);
+            }
+            $subsection->tags = $this->getElements($subsection, 'tags');
+            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Subsection  $subsection
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Subsection $subsection)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $subsection = $this->service->update($request, $id);
+            if (!is_object($subsection)) {
+                throw new \Exception($subsection);
+            }
+            $subsection->tags = $this->getElements($subsection, 'tags');
+            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Subsection  $subsection
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Subsection $subsection)
+    public function delete(Request $request, $id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateSubsectionRequest  $request
-     * @param  \App\Models\Subsection  $subsection
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateSubsectionRequest $request, Subsection $subsection)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Subsection  $subsection
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Subsection $subsection)
-    {
-        //
+        try {
+            $subsection = $this->service->delete($request, $id);
+            if (!is_object($subsection)) {
+                throw new \Exception($subsection);
+            }
+            $subsection->tags = $this->getElements($subsection, 'tags');
+            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
     }
 }

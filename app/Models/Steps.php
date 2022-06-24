@@ -10,12 +10,12 @@ class Steps extends Model
     use HasFactory;
     public function categories()
     {
-        return $this->morphToMany(Category::class, 'catable');
+        return $this->morphToMany(Category::class, 'catable')->withTimestamps();
     }
 
     public function tags()
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
     }
 
     //relacion uno a muchos (inversa)

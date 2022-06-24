@@ -103,4 +103,21 @@ class SectionController extends Controller
         }
         return $this->returnData();
     }
+
+    public function subsectionOfSection($id)
+    {
+        try {
+            $subsections = $this->service->getSubsectionOfSection($id);
+            if (!is_object($subsections)) {
+                throw new \Exception($subsections);
+            }
+            foreach ($subsections as $subsection) {
+                $subsection->tags = $this->getElements($subsection, 'tags');
+                $this->validateErrorOrSuccess($subsections, $subsection->tags);
+            }
+        } catch (\Exception $e) {
+            $this->setMessageError($e->getMessage());
+        }
+        return $this->returnData();
+    }
 }
