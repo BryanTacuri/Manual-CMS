@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Steps extends Model
+class Step extends Model
 {
     use HasFactory;
-    public function categories()
-    {
-        return $this->morphToMany(Category::class, 'catable')->withTimestamps();
-    }
 
     public function tags()
     {
         return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
+    }
+
+    public function files()
+    {
+        return $this->morphToMany(File::class, 'filable')->withTimestamps();
     }
 
     //relacion uno a muchos (inversa)
@@ -27,11 +28,5 @@ class Steps extends Model
     public function subsection()
     {
         return $this->belongsTo(Subsection::class);
-    }
-
-    //Relación uno a muchos
-    public function files()
-    {
-        return $this->hasMany(Files::class);
     }
 }

@@ -26,14 +26,4 @@ class Category extends Model
     {
         return $this->morphedByMany(Section::class, 'catable')->withTimestamps();
     }
-
-    public function subsection()
-    {
-        return $this->morphedByMany(Subsection::class, 'catable')->withTimestamps();
-    }
-
-    public function steps()
-    {
-        return $this->morphedByMany(Steps::class, 'catable')->withTimestamps();
-    }
 }

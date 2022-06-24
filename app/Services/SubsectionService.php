@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Subsection;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class SubsectionService
 {
@@ -17,9 +18,27 @@ class SubsectionService
             }
             if ((auth()->user())) {
                 return Subsection::latest('id')->paginate(10);
-            } else {
-                return Subsection::where('status', 'A')->latest('id')->paginate(10);
             }
+            return Subsection::where('status', 'A')->latest('id')->paginate(10);
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function getId($id)
+    {
+        try {
+            $subsection = Subsection::find($id);
+            if ($subsection == null) {
+                throw new \Exception('No existe esta subsección');
+            }
+            if ((auth()->user())) {
+                return $subsection;
+            }
+            if ($subsection->status != 'A') {
+                throw new \Exception('La subsección no está activo');
+            }
+            return $subsection;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
@@ -31,9 +50,7 @@ class SubsectionService
             $validator = Validator::make($data->all(), [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'status' => 'required|string|max:1',
-                'section_id' => 'required',
-                'user_create' => 'required',
+                'section_id' => 'required'
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
@@ -43,40 +60,17 @@ class SubsectionService
             $subsection = new Subsection();
             $subsection->title = $data->title;
             $subsection->description = $data->description;
-            $subsection->status = $data->status;
             $subsection->section_id = $data->section_id;
-            $subsection->user_create = $data->user_create;
+            $subsection->status = 'A';
+            $subsection->user_create = auth()->user()->id;
             $subsection->save();
 
-            $this->actionElements($subsection, $data, 'tags', new Tag(), 'create');
+            $this->actionElements($subsection->tags(), $data->tags, new Tag(), 'create');
             return $subsection;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
-
-    public function getId($id)
-    {
-
-        try {
-            $subsection = Subsection::find($id);
-            if ($subsection == null) {
-                throw new \Exception('No existe esta subsección');
-            }
-            if ((auth()->user())) {
-                return $subsection;
-            } else {
-                if ($subsection->status == 'A') {
-                    return $subsection;
-                } else {
-                    throw new \Exception('No existe esa subsección');
-                }
-            }
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
 
     public function update($data, $id)
     {
@@ -85,13 +79,11 @@ class SubsectionService
                 'title' => 'required|string|max:50',
                 'description' => 'required|string|max:255',
                 'status' => 'required|string|max:1',
-                'section_id' => 'required',
-                'user_modifies' => 'required',
+                'section_id' => 'required'
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
                 $error =  json_encode($jsonErrors);
-
                 throw new \Exception($error);
             }
 
@@ -102,12 +94,11 @@ class SubsectionService
             $subsection->title = $data->title;
             $subsection->description = $data->description;
             $subsection->status = $data->status;
-            $subsection->user_create = $data->user_create;
-            $subsection->user_modifies = $data->user_modifies;
+            $subsection->user_modifies = auth()->user()->id;
             $subsection->section_id = $data->section_id;
 
             $subsection->tags()->detach();
-            $this->actionElements($subsection, $data, 'tags', new Tag(), 'update');
+            $this->actionElements($subsection->tags(), $data->tags, new Tag(), 'update');
 
             $subsection->update();
             return $subsection;
@@ -119,20 +110,13 @@ class SubsectionService
     public function delete($request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'status' => 'required|string|max:1',
-                'user_delete' => 'required',
-                'date_delete' => 'required',
-            ]);
-            if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_encode($jsonErrors, TRUE);
-                throw new \Exception($error);
-            }
             $subsection = Subsection::find($id);
             if ($subsection == null) {
                 throw new \Exception('No existe esta subsección');
             }
+            $subsection->status = 'E';
+            $subsection->user_delete = auth()->user()->id;
+            $subsection->date_delete = Carbon::now();
             $subsection->update($request->only('status', 'user_delete', 'date_delete'));
             return $subsection;
         } catch (\Exception $e) {
@@ -140,16 +124,16 @@ class SubsectionService
         }
     }
 
-    private function actionElements($section, $data, $elementActions, $model, $action)
+    private function actionElements($manual, $data, $model, $action)
     {
         try {
-            foreach ($data->$elementActions as $name) {
+            foreach ($data as $name) {
                 $element = $model::where('name', $name)->where('status', 'A')->first();
                 if ($element != null && $action == 'create') {
-                    $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create]);
+                    $manual->attach($element->id, ['user_create' => auth()->user()->id]);
                 }
                 if ($element != null && $action == 'update') {
-                    $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
+                    $manual->attach($element->id, ['user_create' => auth()->user()->id, 'user_modifies' => auth()->user()->id]);
                 }
             }
         } catch (\Exception $e) {
