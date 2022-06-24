@@ -3,9 +3,11 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ManualController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\StepController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SubsectionController;
+use App\Models\Step;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -73,4 +75,12 @@ Route::controller(SubsectionController::class)->group(function () {
     Route::get('subsection/{id}', 'getById');
     Route::post('subsection/update/{id}', 'update');
     Route::post('subsection/delete/{id}', 'delete');
+});
+
+Route::controller(StepController::class)->group(function () {
+    Route::post('step/store', 'store');
+    Route::get('step/index', 'index');
+    Route::get('step/{id}', 'getById');
+    Route::post('step/update/{id}', 'update');
+    Route::post('step/delete/{id}', 'delete');
 });

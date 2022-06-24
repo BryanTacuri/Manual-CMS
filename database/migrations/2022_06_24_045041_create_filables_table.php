@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('filables', function (Blueprint $table) {
             $table->unsignedBigInteger('filable_id');
             $table->string('filable_type');
-            $table->unsignedBigInteger('category_id');
+            $table->unsignedBigInteger('file_id');
             $table->foreign('file_id')->references('id')->on('files')->onDelete('cascade');
 
             $table->unsignedBigInteger('user_create')->nullable();
