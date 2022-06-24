@@ -72,26 +72,26 @@ class User extends Authenticatable implements JWTSubject
     //Relación uno a muchos
     public function categories()
     {
-        return $this->hasMany(Category::class);
+        return $this->hasMany(Category::class)->withTimestamps();;
     }
 
     public function manuals()
     {
-        return $this->hasMany(Manual::class);
+        return $this->hasMany(Manual::class)->withTimestamps();
     }
 
     public function sections()
     {
-        return $this->hasMany(Section::class);
+        return $this->hasMany(Section::class)->withTimestamps();
     }
 
-    public function subsection()
+    public function subsections()
     {
-        return $this->hasMany(Subsection::class);
+        return $this->hasMany(Subsection::class)->withTimestamps();
     }
 
-    public function setps()
+    public function steps()
     {
-        return $this->hasMany(Steps::class);
+        return $this->hasMany(Steps::class)->withTimestamps();
     }
 }

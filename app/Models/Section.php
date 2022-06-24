@@ -22,17 +22,17 @@ class Section extends Model
     //relacion uno a muchos (inversa)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTimestamps();;
     }
 
     public function manual()
     {
-        return $this->belongsTo(Manual::class);
+        return $this->belongsTo(Manual::class)->withTimestamps();;
     }
 
     //Relación uno a muchos
     public function subsections()
     {
-        return $this->hasMany(Subsection::class);
+        return $this->hasMany(Subsection::class)->withTimestamps();;
     }
 }

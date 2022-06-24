@@ -13,7 +13,7 @@ class Category extends Model
     //relacion uno a muchos (inversa)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTimestamps();
     }
 
     //relacion muchos a muchos inversa 
@@ -25,15 +25,5 @@ class Category extends Model
     public function section()
     {
         return $this->morphedByMany(Section::class, 'catable')->withTimestamps();
-    }
-
-    public function subsection()
-    {
-        return $this->morphedByMany(Subsection::class, 'catable')->withTimestamps();
-    }
-
-    public function steps()
-    {
-        return $this->morphedByMany(Steps::class, 'catable')->withTimestamps();
     }
 }

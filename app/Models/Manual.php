@@ -25,12 +25,12 @@ class Manual extends Model
     //relacion uno a muchos (inversa)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTimestamps();;
     }
 
     //Relación uno a muchos
     public function sections()
     {
-        return $this->hasMany(Section::class);
+        return $this->hasMany(Section::class)->withTimestamps();;
     }
 }
