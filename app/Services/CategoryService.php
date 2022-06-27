@@ -3,25 +3,32 @@
 namespace App\Services;
 
 use App\Models\Category;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
-
 
 class CategoryService
 {
-    public function getAll()
+    //1. Borrar tanta cosas en validations
+    //3. Aagregar status code en el excepcion
+    //4. En el catch retornar el throw.
+    public function getAll($data)
     {
         try {
+            if (isset($data->search)) {
+                $categories = Category::where('name', 'like', '%' . $data->search . '%')->get();
+                return $categories;
+            }
             $categories = Category::all();
             if (count($categories) == 0) {
-                throw new \Exception('No hay categorias');
+                throw new \Exception('Categorias no encontradas', 404);
             }
             if ((auth()->user())) {
-                return Category::latest('id')->paginate(10);
+                return  Category::latest('id')->paginate(10);
             } else {
                 return Category::where('status', 'A')->latest('id')->paginate(10);
             }
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
@@ -30,28 +37,29 @@ class CategoryService
         try {
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:255',
-                'user_create' => 'required',
             ]);
             if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
-                throw new \Exception($error);
+                $error =  $validator->errors()->first();
+                throw new \Exception($error, 400);
             } else {
-                $category = Category::create($data->all());
+                $category = new Category();
+                $category->name = $data->name;
+                $category->user_create = auth()->user()->id;
+                $category->save();
                 return $category;
             }
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
     public function getId($id)
     {
-
         try {
+
             $category = Category::find($id);
             if ($category == null) {
-                throw new \Exception('No existe esa categoria');
+                throw new \Exception('No existe esa categoria', 404);
             }
             if ((auth()->user())) {
                 return $category;
@@ -59,11 +67,11 @@ class CategoryService
                 if ($category->status == 'A') {
                     return $category;
                 } else {
-                    throw new \Exception('La categoria no esta activa');
+                    throw new \Exception('La categoria no esta activa', 404);
                 }
             }
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
     public function update($data, $id)
@@ -72,47 +80,41 @@ class CategoryService
 
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:255',
-                'user_modifies' => 'required',
+                'status' => 'required|string|max:1'
             ]);
             if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
+                $error =  $validator->errors()->first();
                 throw new \Exception($error);
-            } else {
-                $category = Category::find($id);
-                if (!$category) {
-                    throw new \Exception('No existe esa categoria');
-                }
-                $category->update($data->all());
-                return $category;
             }
+            $category = Category::find($id);
+            if (!$category) {
+                throw new \Exception('No existe esa categoria', 404);
+            }
+            $category->name = $data->name;
+            $category->status = $data->status;
+            $category->user_modifies = auth()->user()->id;
+            $category->update();
+            return $category;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
-    public function delete($data, $id)
+    public function delete($id)
     {
         try {
-            $validator = Validator::make($data->all(), [
-                'status' => 'required|string|max:1',
-                'user_delete' => 'required',
-                'date_delete' => 'required',
-            ]);
-            if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
-                throw new \Exception($error);
-            } else {
-                $category = Category::find($id);
-                if (!$category) {
-                    throw new \Exception('No existe esa categoria');
-                }
-                $category->update($data->only('status', 'user_delete', 'date_delete'));
-                return $category;
+            $category = Category::find($id);
+
+            if (!$category) {
+                throw new \Exception('No existe esa categoria', 404);
             }
+            $category->status = 'E';
+            $category->user_delete = auth()->user()->id;
+            $category->date_delete = Carbon::now();
+            $category->update();
+            return $category;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 }

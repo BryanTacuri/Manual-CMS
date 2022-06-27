@@ -15,7 +15,7 @@ class Tag extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function manuals()
+    public function manual()
     {
         return $this->morphedByMany(Manual::class, 'taggable')->withTimestamps();
     }

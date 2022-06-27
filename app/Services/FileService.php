@@ -5,46 +5,64 @@ namespace App\Services;
 use App\Models\File;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class FileService
 {
-    public function getAll()
+    public function getAll($data)
     {
         try {
+            if (isset($data->embed)) {
+                $embed = array_map('trim', explode(',', $data->embed));
+                $files = File::with($embed)->get();
+                return $files;
+            }
+            if (isset($data->search)) {
+                $files = File::where('name', 'like', '%' . $data->search . '%')->get();
+                return $files;
+            }
             $files = File::all();
             if (count($files) == 0) {
-                throw new \Exception('No hay archivos');
+                throw new \Exception('No hay archivos', 404);
             }
             if ((auth()->user())) {
-                return File::latest('id')->paginate(10);
+                $files = File::latest('id')->paginate(10);
+                return $files;
             }
-            return File::where('status', 'A')->latest('id')->paginate(10);
+            $files = File::where('status', 'A')->latest('id')->paginate(10);
+            return $files;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
-    public function getId($id)
+    public function getId($data, $id)
     {
         try {
             $file = File::find($id);
+            if (isset($data->embed)) {
+                $embed = array_map('trim', explode(',', $data->embed));
+                $fileEmbed = File::with($embed)->get();
+                return $fileEmbed;
+            }
             if ($file == null) {
-                throw new \Exception('No existe este archivo');
+                throw new \Exception('No existe este archivo', 404);
             }
             if ((auth()->user())) {
                 return $file;
             }
             if ($file->status != 'A') {
-                throw new \Exception('El archivo no está activo');
+                throw new \Exception('El archivo no está activo', 404);
             }
             return $file;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
     public function create($data)
     {
+        DB::beginTransaction();
         try {
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:100',
@@ -54,9 +72,8 @@ class FileService
                 'extension' => 'required|string|max:50'
             ]);
             if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_encode($jsonErrors, TRUE);
-                throw new \Exception($error);
+                $error = $validator->errors()->first();
+                throw new \Exception($error, 400);
             }
             $file = new File();
             $file->name = $data->name;
@@ -66,31 +83,34 @@ class FileService
             $file->extension = $data->extension;
             $file->user_create = auth()->user()->id;
             $file->save();
+            DB::commit();
             return $file;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            DB::rollback();
+            throw $e;
         }
     }
 
     public function update($data, $id)
     {
+        DB::beginTransaction();
         try {
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:100',
                 'path' => 'required|string|max:255',
                 'type' => 'required|string|max:50',
                 'size' => 'required|string|max:50',
-                'extension' => 'required|string|max:50'
+                'extension' => 'required|string|max:50',
+                'status' => 'required|string|max:1'
             ]);
             if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_encode($jsonErrors);
+                $error = $validator->errors()->first();
                 throw new \Exception($error);
             }
 
             $file = File::find($id);
             if ($file == null) {
-                throw new \Exception('No existe este archivo');
+                throw new \Exception('No existe este archivo', 404);
             }
             $file->name = $data->name;
             $file->path = $data->path;
@@ -100,26 +120,27 @@ class FileService
             $file->status = $data->status;
             $file->user_modifies = auth()->user()->id;
             $file->update();
+            DB::commit();
             return $file;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
-    public function delete($request, $id)
+    public function delete($id)
     {
         try {
             $file = File::find($id);
             if ($file == null) {
-                throw new \Exception('No existe este archivo');
+                throw new \Exception('No existe este archivo', 404);
             }
             $file->status = 'E';
             $file->user_delete = auth()->user()->id;
             $file->date_delete = Carbon::now();
-            $file->update($request->only('status', 'user_delete', 'date_delete'));
+            $file->update();
             return $file;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 }

@@ -16,16 +16,13 @@ class FileController extends Controller
         parent::__construct();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $files = $this->service->getAll();
-            if (!is_object($files)) {
-                throw new \Exception($files);
-            }
-            $this->validateErrorOrSuccess($files);
+            $files = $this->service->getAll($request);
+            $this->setDataCorrect($files, 'Files encontradas', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -34,26 +31,20 @@ class FileController extends Controller
     {
         try {
             $file = $this->service->create($request);
-            if (!is_object($file)) {
-                throw new \Exception($file);
-            }
-            $this->validateErrorOrSuccess($file);
+            $this->setDataCorrect($file, 'File creado correctamente', 201);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
 
-    public function getById($id)
+    public function getById(Request $request, $id)
     {
         try {
-            $file = $this->service->getId($id);
-            if (!is_object($file)) {
-                throw new \Exception($file);
-            }
-            $this->validateErrorOrSuccess($file);
+            $file = $this->service->getId($request, $id);
+            $this->setDataCorrect($file, 'File encontrado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -62,12 +53,9 @@ class FileController extends Controller
     {
         try {
             $file = $this->service->update($request, $id);
-            if (!is_object($file)) {
-                throw new \Exception($file);
-            }
-            $this->validateErrorOrSuccess($file);
+            $this->setDataCorrect($file, 'File actualizado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -76,12 +64,9 @@ class FileController extends Controller
     {
         try {
             $file = $this->service->delete($request, $id);
-            if (!is_object($file)) {
-                throw new \Exception($file);
-            }
-            $this->validateErrorOrSuccess($file);
+            $this->setDataCorrect($file, 'File eliminado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }

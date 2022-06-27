@@ -16,19 +16,13 @@ class SubsectionController extends Controller
         parent::__construct();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $subsections = $this->service->getAll();
-            if (!is_object($subsections)) {
-                throw new \Exception($subsections);
-            }
-            foreach ($subsections as $subsection) {
-                $subsection->tags = $this->getElements($subsection, 'tags');
-                $this->validateErrorOrSuccess($subsections, $subsection->tags);
-            }
+            $subsections = $this->service->getAll($request);
+            $this->setDataCorrect($subsections, 'Subsections encontradas', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -37,27 +31,20 @@ class SubsectionController extends Controller
     {
         try {
             $subsection = $this->service->create($request);
-            if (!is_object($subsection)) {
-                throw new \Exception($subsection);
-            }
-            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+            $this->setDataCorrect($subsection, 'Subsection creado correctamente', 201);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
 
-    public function getById($id)
+    public function getById(Request $request, $id)
     {
         try {
-            $subsection = $this->service->getId($id);
-            if (!is_object($subsection)) {
-                throw new \Exception($subsection);
-            }
-            $subsection->tags = $this->getElements($subsection, 'tags');
-            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+            $subsection = $this->service->getId($request, $id);
+            $this->setDataCorrect($subsection, 'Subsection encontrado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -66,13 +53,9 @@ class SubsectionController extends Controller
     {
         try {
             $subsection = $this->service->update($request, $id);
-            if (!is_object($subsection)) {
-                throw new \Exception($subsection);
-            }
-            $subsection->tags = $this->getElements($subsection, 'tags');
-            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+            $this->setDataCorrect($subsection, 'Subsection actualizado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -81,13 +64,9 @@ class SubsectionController extends Controller
     {
         try {
             $subsection = $this->service->delete($request, $id);
-            if (!is_object($subsection)) {
-                throw new \Exception($subsection);
-            }
-            $subsection->tags = $this->getElements($subsection, 'tags');
-            $this->validateErrorOrSuccess($subsection, $subsection->tags);
+            $this->setDataCorrect($subsection, 'Subsection eliminado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }

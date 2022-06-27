@@ -16,20 +16,13 @@ class ManualController extends Controller
         parent::__construct();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $manuals = $this->service->getAll();
-            if (!is_object($manuals)) {
-                throw new \Exception($manuals);
-            }
-            foreach ($manuals as $manual) {
-                $manual->categories = $this->getElements($manual, 'categories');
-                $manual->tags = $this->getElements($manual, 'tags');
-                $this->validateErrorOrSuccess($manuals, $manual->categories, $manual->tags);
-            }
+            $manuals = $this->service->getAll($request);
+            $this->setDataCorrect($manuals, 'Manuales encontradas', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -38,28 +31,20 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->create($request);
-            if (!is_object($manual)) {
-                throw new \Exception($manual);
-            }
-            $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
+            $this->setDataCorrect($manual, 'Manual creado correctamente', 201);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
 
-    public function getById($id)
+    public function getById(Request $request, $id)
     {
         try {
-            $manual = $this->service->getId($id);
-            if (!is_object($manual)) {
-                throw new \Exception($manual);
-            }
-            $manual->categories = $this->getElements($manual, 'categories');
-            $manual->tags = $this->getElements($manual, 'tags');
-            $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
+            $manual = $this->service->getId($request, $id);
+            $this->setDataCorrect($manual, 'Manual encontrado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -68,14 +53,9 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->update($request, $id);
-            if (!is_object($manual)) {
-                throw new \Exception($manual);
-            }
-            $manual->categories = $this->getElements($manual, 'categories');
-            $manual->tags = $this->getElements($manual, 'tags');
-            $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
+            $this->setDataCorrect($manual, 'Manual actualizado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -84,32 +64,9 @@ class ManualController extends Controller
     {
         try {
             $manual = $this->service->delete($request, $id);
-            if (!is_object($manual)) {
-                throw new \Exception($manual);
-            }
-            $manual->categories = $this->getElements($manual, 'categories');
-            $manual->tags = $this->getElements($manual, 'tags');
-            $this->validateErrorOrSuccess($manual, $manual->categories, $manual->tags);
+            $this->setDataCorrect($manual, 'Manual eliminado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
-        }
-        return $this->returnData();
-    }
-
-    public function sectionOfManual($id)
-    {
-        try {
-            $sections = $this->service->getSectionOfManual($id);
-            if (!is_object($sections)) {
-                throw new \Exception($sections);
-            }
-            foreach ($sections as $manual) {
-                $manual->categories = $this->getElements($manual, 'categories');
-                $manual->tags = $this->getElements($manual, 'tags');
-                $this->validateErrorOrSuccess($sections, $manual->categories, $manual->tags);
-            }
-        } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }

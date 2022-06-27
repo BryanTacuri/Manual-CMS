@@ -17,42 +17,44 @@ class Controller extends BaseController
         $this->apiResponse = new ApiResponse();
     }
 
-    public function validateErrorOrSuccess($data)
+    /*  public function validateErrorOrSuccess($data)
     {
         if (is_object($data)) {
             $this->apiResponse->setData($data);
         } else {
             $this->apiResponse->setMessageError($data);
         }
-    }
+    } */
 
     public function setData($data)
     {
         $this->apiResponse->setData($data);
     }
 
+    public function setDataCorrect($data, $message, $status = 200)
+    {
+        $this->apiResponse->setData($data);
+        $this->apiResponse->setMessage($message);
+        $this->apiResponse->setStatusCode($status);
+    }
+
+
     public function setStatusCode($statusCode)
     {
         $this->apiResponse->setStatusCode($statusCode);
     }
 
-    public function setMessageError($message)
+    public function setMessage($message)
     {
-        $this->apiResponse->setMessageError($message);
+        $this->apiResponse->setMessage($message);
+    }
+    public function setError($message, $statusCode)
+    {
+        $this->apiResponse->setError($message, $statusCode);
     }
 
     public function returnData()
     {
         return $this->apiResponse->returnData();
-    }
-
-    public function getElements($model, $element)
-    {
-        try {
-            $element = $model->$element()->where('status', 'A')->get();
-            return $element;
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
     }
 }

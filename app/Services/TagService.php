@@ -3,115 +3,127 @@
 namespace App\Services;
 
 use App\Models\Tag;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TagService
 {
-    public function getAll()
+    public function getAll($data)
     {
         try {
+            if (isset($data->embed)) {
+                $embed = array_map('trim', explode(',', $data->embed));
+                $tags = Tag::with($embed)->get();
+                return $tags;
+            }
+            if (isset($data->search)) {
+                $tags = Tag::where('name', 'like', '%' . $data->search . '%')->get();
+                return $tags;
+            }
             $tags = Tag::all();
             if (count($tags) == 0) {
-                throw new \Exception('No hay tags');
+                throw new \Exception('No hay tags', 404);
             }
             if ((auth()->user())) {
-                return Tag::paginate();
-            } else {
-                return Tag::where('status', 'A')->paginate(10);
+                $tags = Tag::latest('id')->paginate(10);
             }
+            $tags = Tag::where('status', 'A')->latest('id')->paginate(10);
+            return $tags;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
     public function create($data)
     {
+        DB::beginTransaction();
         try {
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:255',
-                'user_create' => 'required',
             ]);
             if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
-                throw new \Exception($error);
-            } else {
-                $tag = Tag::create($data->all());
-                return $tag;
+                $error = $validator->errors()->first();
+                throw new \Exception($error, 400);
             }
+            $tag = new Tag();
+            $tag->name = $data->name;
+            $tag->user_create = auth()->user()->id;
+            $tag->save();
+            DB::commit();
+            return $tag;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            DB::rollback();
+            throw $e;
         }
     }
 
-    public function getId($id)
+    public function getId($data, $id)
     {
-
         try {
             $tag = Tag::find($id);
+            if (isset($data->embed)) {
+                $embed = array_map('trim', explode(',', $data->embed));
+                $tagEmbed = $tag->with($embed)->get();
+                return $tagEmbed;
+            }
             if ($tag == null) {
-                throw new \Exception('No existe esa tag');
+                throw new \Exception('No existe esa tag', 404);
             }
             if ((auth()->user())) {
                 return $tag;
-            } else {
-                if ($tag->status == 'A') {
-                    return $tag;
-                } else {
-                    throw new \Exception('La tag no esta activa');
-                }
             }
+            if ($tag->status != 'A') {
+                throw new \Exception('La tag no esta activa', 404);
+            } 
+            return $tag;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 
     public function update($data, $id)
     {
+        DB::beginTransaction();
         try {
             $validator = Validator::make($data->all(), [
                 'name' => 'required|string|max:255',
-                'user_update' => 'required',
+                'status' => 'required|string|max:1'
             ]);
             if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
+                $error = $validator->errors()->first();
                 throw new \Exception($error);
-            } else {
-                $tag = Tag::find($id);
-                if ($tag == null) {
-                    throw new \Exception('No existe esa tag');
-                }
-                $tag->update($data->all());
-                return $tag;
             }
+            $tag = Tag::find($id);
+            if ($tag == null) {
+                throw new \Exception('No existe esa tag', 404);
+            }
+            $tag->name = $data->name;
+            $tag->status = $data->status;
+            $tag->user_modifies = auth()->user()->id;
+            $tag->update();
+            DB::commit();
+            return $tag;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            DB::rollback();
+            throw $e;
         }
     }
 
-    public function delete($data, $id)
+    public function delete($id)
     {
         try {
-            $validator = Validator::make($data->all(), [
-                'status' => 'required|string|max:1',
-                'user_delete' => 'required',
-                'date_delete' => 'required',
-            ]);
-            if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_decode($jsonErrors, TRUE);
-                throw new \Exception($error);
-            } else {
-                $tag = Tag::find($id);
-                if (!$tag) {
-                    throw new \Exception('No existe esa tag');
-                }
-                $tag->update($data->only('status', 'user_delete', 'date_delete'));
-                return $tag;
+            $tag = Tag::find($id);
+            if (!$tag) {
+                throw new \Exception('No existe esa tag', 404);
             }
+            $tag->status = 'E';
+            $tag->user_delete = auth()->user()->id;
+            $tag->date_delete = Carbon::now();
+            $tag->update();
+            return $tag;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
     }
 }

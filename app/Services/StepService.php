@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\File;
 use App\Models\Step;
 use App\Models\Tag;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -33,9 +34,7 @@ class StepService
             $validator = Validator::make($data->all(), [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'status' => 'required|string|max:1',
                 'subsection_id' => 'required',
-                'user_create' => 'required',
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
@@ -46,14 +45,12 @@ class StepService
             $step = new Step();
             $step->title = $data->title;
             $step->description = $data->description;
-            $step->status = $data->status;
             $step->subsection_id = $data->subsection_id;
-            $step->user_create = $data->user_create;
+            $step->user_create = auth()->user()->id;
             $step->save();
 
-            $this->actionElements($step, $data, 'files', new File(), 'create');
+            $this->actionElements($step->tags(), $data->tags, new Tag(), 'create');
 
-            $this->actionElements($step, $data, 'tags', new Tag(), 'create');
             return $step;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -90,7 +87,6 @@ class StepService
                 'description' => 'required|string',
                 'status' => 'required|string|max:1',
                 'subsection_id' => 'required',
-                'user_modifies' => 'required',
 
             ]);
             if ($validator->fails()) {
@@ -109,14 +105,12 @@ class StepService
             $step->description = $data->description;
             $step->status = $data->status;
             $step->subsection_id = $data->subsection_id;
-            $step->user_modifies = $data->user_modifies;
+            $step->user_modifies = auth()->user()->id;
 
 
-            $step->categories()->detach();
-            $this->actionElements($step, $data, 'categories', new File(), 'update');
 
             $step->tags()->detach();
-            $this->actionElements($step, $data, 'tags', new Tag(), 'update');
+            $this->actionElements($step->tags(), $data->tags, new Tag(), 'update');
 
             $step->update();
             return $step;
@@ -125,40 +119,34 @@ class StepService
         }
     }
 
-    public function delete($request, $id)
+    public function delete($id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'status' => 'required|string|max:1',
-                'user_delete' => 'required',
-                'date_delete' => 'required',
-            ]);
-            if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_encode($jsonErrors, TRUE);
-                throw new \Exception($error);
-            }
+
             $step = Step::find($id);
             if ($step == null) {
                 throw new \Exception('No existe este step');
             }
-            $step->update($request->only('status', 'user_delete', 'date_delete'));
+            $step->status = 'E';
+            $step->user_delete = auth()->user()->id;
+            $step->date_delete = Carbon::now();
+            $step->update();
             return $step;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
-    private function actionElements($section, $data, $elementActions, $model, $action)
+    private function actionElements($step, $data, $model, $action)
     {
         try {
-            foreach ($data->$elementActions as $name) {
+            foreach ($data as $name) {
                 $element = $model::where('name', $name)->where('status', 'A')->first();
                 if ($element != null && $action == 'create') {
-                    $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create]);
+                    $step->attach($element->id, ['user_create' => auth()->user()->id]);
                 }
                 if ($element != null && $action == 'update') {
-                    $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
+                    $step->attach($element->id, ['user_create' => auth()->user()->id, 'user_modifies' => auth()->user()->id]);
                 }
             }
         } catch (\Exception $e) {

@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 
 class SectionController extends Controller
 {
-
     private $service;
 
     public function __construct()
@@ -22,17 +21,15 @@ class SectionController extends Controller
         parent::__construct();
     }
 
-
     public function index()
     {
         try {
             $sections = $this->service->getAll();
-            if (!is_object($sections)) {
-                throw new \Exception($sections);
-            }
+
             foreach ($sections as $manual) {
                 $manual->categories = $this->getElements($manual, 'categories');
                 $manual->tags = $this->getElements($manual, 'tags');
+
                 $this->validateErrorOrSuccess($sections, $manual->categories, $manual->tags);
             }
         } catch (\Exception $e) {
@@ -98,23 +95,6 @@ class SectionController extends Controller
             $section->categories = $this->getElements($section, 'categories');
             $section->tags = $this->getElements($section, 'tags');
             $this->validateErrorOrSuccess($section, $section->categories, $section->tags);
-        } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
-        }
-        return $this->returnData();
-    }
-
-    public function subsectionOfSection($id)
-    {
-        try {
-            $subsections = $this->service->getSubsectionOfSection($id);
-            if (!is_object($subsections)) {
-                throw new \Exception($subsections);
-            }
-            foreach ($subsections as $subsection) {
-                $subsection->tags = $this->getElements($subsection, 'tags');
-                $this->validateErrorOrSuccess($subsections, $subsection->tags);
-            }
         } catch (\Exception $e) {
             $this->setMessageError($e->getMessage());
         }

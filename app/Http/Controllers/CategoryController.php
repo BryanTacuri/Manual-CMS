@@ -7,6 +7,9 @@ use App\Services\CategoryService;
 
 class CategoryController extends Controller
 {
+    //1. Borrar el metodo validateErrorOrSuccess
+    //2. Baregar setdatacorrect
+    //3. agregar metodo setError en el ctac
 
     private $service;
     public function __construct()
@@ -16,13 +19,13 @@ class CategoryController extends Controller
         parent::__construct();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $categories = $this->service->getAll();
-            $this->validateErrorOrSuccess($categories);
+            $categories = $this->service->getAll($request);
+            $this->setDataCorrect($categories, 'Categorias encontradas', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -31,9 +34,9 @@ class CategoryController extends Controller
     {
         try {
             $categories = $this->service->create($request);
-            $this->validateErrorOrSuccess($categories);
+            $this->setDataCorrect($categories, 'Categoria  guardada', 201);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -43,9 +46,9 @@ class CategoryController extends Controller
     {
         try {
             $category = $this->service->getId($id);
-            $this->validateErrorOrSuccess($category);
+            $this->setDataCorrect($category, 'Categoria  encontrada', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -55,9 +58,9 @@ class CategoryController extends Controller
 
         try {
             $category = $this->service->update($request, $id);
-            $this->validateErrorOrSuccess($category);
+            $this->setDataCorrect($category, 'Categoria  actualizada', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), 500);
         }
         return $this->returnData();
     }
@@ -67,9 +70,9 @@ class CategoryController extends Controller
     {
         try {
             $category = $this->service->delete($request, $id);
-            $this->validateErrorOrSuccess($category);
+            $this->setDataCorrect($category, 'Categoria  eliminada', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), 500);
         }
     }
 }

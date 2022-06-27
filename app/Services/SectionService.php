@@ -6,6 +6,7 @@ use App\Models\Section;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Category;
+use Carbon\Carbon;
 
 class SectionService
 {
@@ -32,9 +33,7 @@ class SectionService
             $validator = Validator::make($data->all(), [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'status' => 'required|string|max:1',
                 'manual_id' => 'required',
-                'user_create' => 'required',
             ]);
             if ($validator->fails()) {
                 $jsonErrors =  $validator->errors();
@@ -45,14 +44,13 @@ class SectionService
             $section = new Section();
             $section->title = $data->title;
             $section->description = $data->description;
-            $section->status = $data->status;
             $section->manual_id = $data->manual_id;
-            $section->user_create = $data->user_create;
+            $section->user_create = auth()->user()->id;
             $section->save();
 
-            $this->actionElements($section, $data, 'categories', new Category(), 'create');
+            $this->actionElements($section->categories(), $data->categories, new Category(), 'create');
+            $this->actionElements($section->tags(), $data->tags, new Tag(), 'create');
 
-            $this->actionElements($section, $data, 'tags', new Tag(), 'create');
             return $section;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -68,12 +66,9 @@ class SectionService
             }
             if ((auth()->user())) {
                 return $section;
-            } else {
-                if ($section->status == 'A') {
-                    return $section;
-                } else {
-                    throw new \Exception('No existe esa sección');
-                }
+            }
+            if ($section->status != 'A') {
+                throw new \Exception('La subsección no está activo');
             }
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -88,7 +83,6 @@ class SectionService
                 'title' => 'required|string|max:50',
                 'description' => 'required|string|max:255',
                 'status' => 'required|string|max:1',
-                'user_modifies' => 'required',
                 'manual_id' => 'required',
             ]);
             if ($validator->fails()) {
@@ -105,15 +99,14 @@ class SectionService
             $section->title = $data->title;
             $section->description = $data->description;
             $section->status = $data->status;
-            $section->user_create = $data->user_create;
-            $section->user_modifies = $data->user_modifies;
             $section->manual_id = $data->manual_id;
+            $section->user_modifies = auth()->user()->id;
 
             $section->categories()->detach();
-            $this->actionElements($section, $data, 'categories', new Category(), 'update');
+            $this->actionElements($section->categories(), $data->categories, new Category(), 'update');
 
             $section->tags()->detach();
-            $this->actionElements($section, $data, 'tags', new Tag(), 'update');
+            $this->actionElements($section->tags(), $data->tags, new Tag(), 'update');
 
             $section->update();
             return $section;
@@ -122,55 +115,35 @@ class SectionService
         }
     }
 
-    public function delete($request, $id)
+    public function delete($id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'status' => 'required|string|max:1',
-                'user_delete' => 'required',
-                'date_delete' => 'required',
-            ]);
-            if ($validator->fails()) {
-                $jsonErrors =  $validator->errors();
-                $error =  json_encode($jsonErrors, TRUE);
-                throw new \Exception($error);
-            }
             $section = Section::find($id);
             if ($section == null) {
                 throw new \Exception('No existe este section');
             }
-            $section->update($request->only('status', 'user_delete', 'date_delete'));
+            $section->status = 'E';
+            $section->user_delete = auth()->user()->id;
+            $section->date_delete = Carbon::now();
+            $section->update();
             return $section;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
-    private function actionElements($section, $data, $elementActions, $model, $action)
+    private function actionElements($subsection, $data, $model, $action)
     {
         try {
-            foreach ($data->$elementActions as $name) {
+            foreach ($data as $name) {
                 $element = $model::where('name', $name)->where('status', 'A')->first();
                 if ($element != null && $action == 'create') {
-                    $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create]);
+                    $subsection->attach($element->id, ['user_create' => auth()->user()->id]);
                 }
                 if ($element != null && $action == 'update') {
-                    $section->$elementActions()->attach($element->id, ['user_create' => $data->user_create, 'user_modifies' => $data->user_modifies]);
+                    $subsection->attach($element->id, ['user_create' => auth()->user()->id, 'user_modifies' => auth()->user()->id]);
                 }
             }
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function getSubsectionOfSection($id)
-    {
-        try {
-            $section = Section::find($id);
-            if ($section == null) {
-                throw new \Exception('No existe este section');
-            }
-            return $section->subsections;
         } catch (\Exception $e) {
             return $e->getMessage();
         }

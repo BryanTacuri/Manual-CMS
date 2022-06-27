@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreTagRequest;
 use Illuminate\Http\Request;
-use App\Http\Requests\UpdateTagRequest;
-use App\Models\Tag;
 use App\Services\TagService;
 
 class TagController extends Controller
@@ -18,13 +15,13 @@ class TagController extends Controller
         parent::__construct();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $tags = $this->service->getAll();
-            $this->validateErrorOrSuccess($tags);
+            $tags = $this->service->getAll($request);
+            $this->setDataCorrect($tags, 'Tags encontradas', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -32,22 +29,22 @@ class TagController extends Controller
     public function store(Request $request)
     {
         try {
-            $tags = $this->service->create($request);
-            $this->validateErrorOrSuccess($tags);
+            $tag = $this->service->create($request);
+            $this->setDataCorrect($tag, 'Tag creado correctamente', 201);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
 
 
-    public function getById($id)
+    public function getById(Request $request, $id)
     {
         try {
-            $tag = $this->service->getId($id);
-            $this->validateErrorOrSuccess($tag);
+            $tag = $this->service->getId($request, $id);
+            $this->setDataCorrect($tag, 'Tag encontrado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -57,9 +54,9 @@ class TagController extends Controller
 
         try {
             $tag = $this->service->update($request, $id);
-            $this->validateErrorOrSuccess($tag);
+            $this->setDataCorrect($tag, 'Tag actualizado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
         return $this->returnData();
     }
@@ -69,9 +66,10 @@ class TagController extends Controller
     {
         try {
             $tag = $this->service->delete($request, $id);
-            $this->validateErrorOrSuccess($tag);
+            $this->setDataCorrect($tag, 'Tag eliminado correctamente', 200);
         } catch (\Exception $e) {
-            $this->setMessageError($e->getMessage());
+            $this->setError($e->getMessage(), $e->getCode());
         }
+        return $this->returnData();
     }
 }

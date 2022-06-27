@@ -38,7 +38,7 @@ Route::controller(UserController::class)->group(function () {
 Route::controller(CategoryController::class)->group(function () {
     Route::post('category', 'store');
     Route::get('category', 'index');
-    Route::get('category/{id}', 'getById');
+    Route::get('category/{id}', 'getById')->where(['id' => '\d+']);
     Route::put('category/{id}', 'update');
     Route::delete('category/{id}', 'delete');
 });
@@ -58,7 +58,6 @@ Route::controller(ManualController::class)->group(function () {
     Route::get('manual/{id}', 'getById');
     Route::put('manual/{id}', 'update');
     Route::delete('manual/{id}', 'delete');
-    Route::get('manual/{id}/section', 'sectionOfManual');
 });
 
 Route::controller(SectionController::class)->group(function () {
@@ -67,7 +66,6 @@ Route::controller(SectionController::class)->group(function () {
     Route::get('section/{id}', 'getById');
     Route::put('section/{id}', 'update');
     Route::delete('section/{id}', 'delete');
-    Route::get('section/{id}/subsection', 'subsectionOfSection');
 });
 
 Route::controller(SubsectionController::class)->group(function () {
